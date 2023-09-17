@@ -12,9 +12,13 @@ import {
 import type { Database } from "@/lib/schema";
 import Image from "next/image";
 import { useState } from "react";
+import "../globals.css";
+import DropdownEditDelete from "./dropdown";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 type Species = Database["public"]["Tables"]["species"]["Row"];
 
-export default function SpeciesCard(species: Species) {
+export default function SpeciesCard(species: Species, isReadOnly: boolean) {
   const [open, setOpen] = useState<boolean>(false);
 
   return (
@@ -37,43 +41,49 @@ export default function SpeciesCard(species: Species) {
         </DialogTrigger>
         <DialogContent className="max-h-screen overflow-y-auto sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>{species.common_name}</DialogTitle>
-            <DialogDescription>
-              More information on the {species.common_name}!
-            </DialogDescription>
+            <DialogTitle className="rightJustify">
+              {species.common_name}
+              <DropdownEditDelete />
+            </DialogTitle>
+            <DialogDescription>More information on the {species.common_name}!</DialogDescription>
           </DialogHeader>
           <div>
-            <h1 className="font-bold">Scientific Name</h1>
-            <p className="font-light italic">{species.scientific_name}</p>
+            <label>Scientific Name</label>
+            <br />
+            <input type="text" value={species.scientific_name} readOnly={isReadOnly} className="font-light italic" />
           </div>
 
           <div>
-            <h1 className="font-bold">Common Name</h1>
-            <p className="font-light">{species.common_name}</p>
+            <label>Common Name</label>
+            <br />
+            <input type="text" value={species.common_name} readOnly={isReadOnly} className="border font-light" />
           </div>
 
           <div>
-            <h1 className="font-bold">Kingdom</h1>
-            <p className="font-light">{species.kingdom}</p>
+            <label>Kingdom</label>
+            <br />
+            <input type="text" value={species.kingdom} readOnly={isReadOnly} className="border font-light" />
           </div>
 
           <div>
-            <h1 className="font-bold">Total Population</h1>
-            <p className="font-light">{species.total_population ? species.total_population : "N/A"}</p>
+            <label>Total Population</label>
+            <br />
+            <input
+              type="text"
+              value={species.total_population ? species.total_population : "N/A"}
+              readOnly={isReadOnly}
+              className="border font-light"
+            />
           </div>
 
           <div>
-            <h1 className="font-bold">Description</h1>
-            <p className="font-light">{species.description}</p>
+            <label>Description</label>
+            <br />
+            <textarea value={species.description} readOnly={isReadOnly} className="border font-light" />
           </div>
 
           <div className="flex">
-            <Button 
-              type="button" 
-              className="ml-1 mr-1 flex-auto" 
-              variant="secondary" 
-              onClick={() => setOpen(false)}
-            >
+            <Button type="button" className="ml-1 mr-1 flex-auto" variant="secondary" onClick={() => setOpen(false)}>
               Close
             </Button>
           </div>
