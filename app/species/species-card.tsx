@@ -14,50 +14,16 @@ import Image from "next/image";
 import { useState } from "react";
 import "../globals.css";
 import DropdownEditDelete from "./dropdown";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { z } from "zod";
-import { useRouter } from "next/navigation";
-
 
 type Species = Database["public"]["Tables"]["species"]["Row"];
 
-// form set up
-const kingdoms = z.enum(["Animalia", "Plantae", "Fungi", "Protista", "Archaea", "Bacteria"]);
-
-const speciesSchema = z.object({
-  common_name: z
-    .string()
-    .nullable()
-    // Transform empty string or only whitespace input to null before form submission
-    .transform((val) => (val?.trim() === "" ? null : val?.trim())),
-  description: z
-    .string()
-    .nullable()
-    .transform((val) => (val?.trim() === "" ? null : val?.trim())),
-  kingdom: kingdoms,
-  scientific_name: z
-    .string()
-    .trim()
-    .min(1)
-    .transform((val) => val?.trim()),
-  total_population: z.number().int().positive().min(1).optional(),
-  image: z
-    .string()
-    .url()
-    .nullable()
-    .transform((val) => val?.trim()),
-});
-
-type FormData = z.infer<typeof speciesSchema>;
-
-const defaultValues: Partial<FormData> = {
-  kingdom: "Animalia",
+type SpeciesCardProps = Species & {
+  userId: string;
+  isReadOnly: boolean;
 };
 
-export default function SpeciesCard(species: Species, isReadOnly: boolean) {
+export default function SpeciesCard({ isReadOnly, userId, ...species }: SpeciesCardProps) {
   const [open, setOpen] = useState<boolean>(false);
-  const router = useRouter();
 
   return (
     <div className="min-w-72 m-4 w-72 flex-none rounded border-2 p-3 shadow">
@@ -89,6 +55,7 @@ export default function SpeciesCard(species: Species, isReadOnly: boolean) {
             <label>Scientific Name</label>
             <br />
             <input type="text" value={species.scientific_name} readOnly={isReadOnly} className="font-light italic" />
+            <input type="text"></input>
           </div>
 
           <div>

@@ -32,8 +32,10 @@ export default async function SpeciesList() {
       </div>
       <Separator className="my-4" />
       <div className="flex flex-wrap justify-center">
-        {species?.map((species) => <SpeciesCard key={species.id} {...species} />)}
-      </div>
+      {species?.map(species => 
+  <SpeciesCard key={species.id} {...species} userId={session.user.id} isReadOnly={false}/>
+)}      
+    </div>
     </>
   );
 }

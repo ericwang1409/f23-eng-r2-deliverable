@@ -16,7 +16,7 @@ export default function DropdownList() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <Button disabled={true} variant="ghost">
+          <Button variant="ghost">
             <Icons.settings />
           </Button>
         </DropdownMenuTrigger>
