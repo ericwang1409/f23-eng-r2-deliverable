@@ -88,3 +88,8 @@
   grid-template-columns: 1fr auto;
   align-items: center;
 }
+
+.deleteButton {
+  background-color: red;
+  color: white;
+}
