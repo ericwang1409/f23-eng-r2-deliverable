@@ -11,7 +11,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function DropdownList() {
+interface DropdownListProps {
+    onEdit: () => void;
+  }
+
+export default function DropdownList({ onEdit } : DropdownListProps) {
   return (
     <>
       <DropdownMenu>
@@ -21,7 +25,7 @@ export default function DropdownList() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem>Edit</DropdownMenuItem>
+          <DropdownMenuItem onClick={onEdit}>Edit</DropdownMenuItem>
           <DropdownMenuItem className="deleteButton">Delete</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
