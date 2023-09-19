@@ -3,9 +3,7 @@ import { TypographyH2 } from "@/components/ui/typography";
 import { createServerSupabaseClient } from "@/lib/server-utils";
 import { redirect } from "next/navigation";
 import AddSpeciesDialog from "./add-species-dialog";
-// import EditSpeciesDialog from "./edit-species-dialog";
 import SpeciesCard from "./species-card";
-// import { Edit } from "lucide-react";
 
 export default async function SpeciesList() {
   // Create supabase server component client and obtain user session from stored cookie
@@ -26,7 +24,6 @@ export default async function SpeciesList() {
       <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
         <TypographyH2>Species List</TypographyH2>
         <div>
-          {/* <EditSpeciesDialog userId={session.user.id} /> */}
           <AddSpeciesDialog key={new Date().getTime()} userId={session.user.id} />
         </div>
       </div>

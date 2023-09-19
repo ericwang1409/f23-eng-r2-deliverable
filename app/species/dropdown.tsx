@@ -1,8 +1,6 @@
 "use-client";
 
-// import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu"
 import { Icons } from "@/components/icons";
-// import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,8 +16,6 @@ interface DropdownListProps {
 }
 
 export default function DropdownList({ speciesId, userId, onEdit, onDelete }: DropdownListProps) {
-  // const [isAlertDialogOpen, setAlertDialogOpen] = useState(false);
-
   return (
     <>
       <DropdownMenu>
