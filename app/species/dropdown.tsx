@@ -15,6 +15,7 @@ interface DropdownListProps {
   speciesId: string;
 }
 
+// dropdown menu for edit and delete
 export default function DropdownList({ speciesId, userId, onEdit, onDelete }: DropdownListProps) {
   return (
     <>

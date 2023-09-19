@@ -60,12 +60,13 @@ const speciesSchema = z.object({
 
 type FormData = z.infer<typeof speciesSchema>;
 
-
 export default function SpeciesCard({ userId, ...species }: SpeciesCardProps) {
   const supabase = createClientComponentClient<Database>();
   const [open, setOpen] = useState<boolean>(false);
   const [isReadOnly, setIsReadOnly] = useState<boolean>(true);
   const router = useRouter();
+
+  // default values for the form
   const defaultValues: Partial<FormData> = {
     common_name: species.common_name,
     description: species.description,
@@ -81,12 +82,9 @@ export default function SpeciesCard({ userId, ...species }: SpeciesCardProps) {
     mode: "onChange",
   });
 
+  // deletes the species if user is author
   const handleDelete = async () => {
-    const { error } = await supabase
-      .from("species") 
-      .delete()
-      .eq("id", species.id)
-      .eq("author", userId);
+    const { error } = await supabase.from("species").delete().eq("id", species.id).eq("author", userId);
 
     if (error) {
       return toast({
@@ -99,6 +97,7 @@ export default function SpeciesCard({ userId, ...species }: SpeciesCardProps) {
     router.refresh();
   };
 
+  // updates the species if user is author
   const onSubmit = async (input: FormData) => {
     const { error } = await supabase
       .from("species")
@@ -110,7 +109,8 @@ export default function SpeciesCard({ userId, ...species }: SpeciesCardProps) {
         total_population: input.total_population,
         image: input.image,
       })
-      .eq("id", species.id);
+      .eq("id", species.id)
+      .eq("author", userId);
 
     if (error) {
       return toast({
@@ -140,6 +140,7 @@ export default function SpeciesCard({ userId, ...species }: SpeciesCardProps) {
       <p>{species.description ? species.description.slice(0, 150).trim() + "..." : ""}</p>
       {/* Replace with detailed view */}
 
+      {/* detailed view as form - on readOnly as default */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button className="mt-3 w-full" onClick={() => setOpen(true)}>
@@ -283,6 +284,7 @@ export default function SpeciesCard({ userId, ...species }: SpeciesCardProps) {
                   <Button type="submit" className="ml-1 mr-1 flex-auto" disabled={isReadOnly}>
                     Edit Species
                   </Button>
+
                   <Button
                     type="button"
                     className="ml-1 mr-1 flex-auto"
