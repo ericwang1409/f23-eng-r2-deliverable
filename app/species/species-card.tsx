@@ -70,7 +70,7 @@ export default function SpeciesCard({ userId, ...species }: SpeciesCardProps) {
   const defaultValues: Partial<FormData> = {
     common_name: species.common_name,
     description: species.description,
-    kingdom: "Animalia",
+    kingdom: species.kingdom,
     scientific_name: species.scientific_name,
     total_population: species.total_population ?? undefined,
     image: species.image ?? undefined,
@@ -210,6 +210,7 @@ export default function SpeciesCard({ userId, ...species }: SpeciesCardProps) {
                       <Select
                         onValueChange={(value) => field.onChange(kingdoms.parse(value))}
                         defaultValue={species.kingdom}
+                        disabled={isReadOnly}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -257,7 +258,7 @@ export default function SpeciesCard({ userId, ...species }: SpeciesCardProps) {
                     <FormItem>
                       <FormLabel>Image URL</FormLabel>
                       <FormControl>
-                        <Input defaultValue={species.image ?? "N/A"} {...field} />
+                        <Input readOnly={isReadOnly} defaultValue={species.image ?? "N/A"} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -273,7 +274,7 @@ export default function SpeciesCard({ userId, ...species }: SpeciesCardProps) {
                       <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                          <Textarea placeholder={value ?? ""} defaultValue={species.description ?? ""} {...rest} />
+                          <Textarea readOnly={isReadOnly} placeholder={value ?? ""} defaultValue={species.description ?? ""} {...rest} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
