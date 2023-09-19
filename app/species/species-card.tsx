@@ -85,7 +85,8 @@ export default function SpeciesCard({ userId, ...species }: SpeciesCardProps) {
     const { error } = await supabase
       .from("species") 
       .delete()
-      .eq("id", species.id);
+      .eq("id", species.id)
+      .eq("author", userId);
 
     if (error) {
       return toast({
