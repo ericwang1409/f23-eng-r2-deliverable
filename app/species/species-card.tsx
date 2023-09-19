@@ -9,21 +9,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import type { Database } from "@/lib/schema";
-import Image from "next/image";
-import "../globals.css";
-import DropdownEditDelete from "./dropdown";
-import { z } from "zod";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/components/ui/use-toast";
-import { useState, type BaseSyntheticEvent } from "react";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/use-toast";
+import type { Database } from "@/lib/schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState, type BaseSyntheticEvent } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import "../globals.css";
+import DropdownEditDelete from "./dropdown";
 
 type Species = Database["public"]["Tables"]["species"]["Row"];
 
@@ -60,21 +60,43 @@ const speciesSchema = z.object({
 
 type FormData = z.infer<typeof speciesSchema>;
 
-const defaultValues: Partial<FormData> = {
-  kingdom: "Animalia",
-};
 
 export default function SpeciesCard({ userId, ...species }: SpeciesCardProps) {
   const supabase = createClientComponentClient<Database>();
   const [open, setOpen] = useState<boolean>(false);
   const [isReadOnly, setIsReadOnly] = useState<boolean>(true);
   const router = useRouter();
+  const defaultValues: Partial<FormData> = {
+    common_name: species.common_name,
+    description: species.description,
+    kingdom: "Animalia",
+    scientific_name: species.scientific_name,
+    total_population: species.total_population ?? undefined,
+    image: species.image ?? undefined,
+  };
 
   const form = useForm<FormData>({
     resolver: zodResolver(speciesSchema),
     defaultValues,
     mode: "onChange",
   });
+
+  const handleDelete = async () => {
+    const { error } = await supabase
+      .from("species") 
+      .delete()
+      .eq("id", species.id);
+
+    if (error) {
+      return toast({
+        title: "Something went wrong.",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+
+    router.refresh();
+  };
 
   const onSubmit = async (input: FormData) => {
     const { error } = await supabase
@@ -100,10 +122,10 @@ export default function SpeciesCard({ userId, ...species }: SpeciesCardProps) {
     form.reset(input);
 
     setOpen(false);
+    setIsReadOnly(true);
 
     router.refresh();
   };
-
 
   return (
     <div className="min-w-72 m-4 w-72 flex-none rounded border-2 p-3 shadow">
@@ -127,142 +149,154 @@ export default function SpeciesCard({ userId, ...species }: SpeciesCardProps) {
           <DialogHeader>
             <DialogTitle className="rightJustify">
               {species.common_name}
-              <DropdownEditDelete onEdit={() => setIsReadOnly(species.author !== userId)}/>
+              <DropdownEditDelete
+                speciesId={species.author}
+                userId={userId}
+                onEdit={() => setIsReadOnly(species.author !== userId)}
+                onDelete={() => {
+                  void handleDelete();
+                }}
+              />
             </DialogTitle>
             <DialogDescription>More information on the {species.common_name}!</DialogDescription>
           </DialogHeader>
           <Form {...form}>
-          <form onSubmit={(e: BaseSyntheticEvent) => void form.handleSubmit(onSubmit)(e)}>
-            <div className="grid w-full items-center gap-4">
-              <FormField
-                control={form.control}
-                name="scientific_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Scientific Name</FormLabel>
-                    <FormControl>
-                      <Input readOnly={isReadOnly} defaultValue={species.scientific_name} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="common_name"
-                render={({ field }) => {
-                  // We must extract value from field and convert a potential defaultValue of `null` to "" because inputs can't handle null values: https://github.com/orgs/react-hook-form/discussions/4091
-                  const { value, ...rest } = field;
-                  return (
+            <form onSubmit={(e: BaseSyntheticEvent) => void form.handleSubmit(onSubmit)(e)}>
+              <div className="grid w-full items-center gap-4">
+                <FormField
+                  control={form.control}
+                  name="scientific_name"
+                  render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Common Name</FormLabel>
+                      <FormLabel>Scientific Name</FormLabel>
                       <FormControl>
-                        <Input readOnly={isReadOnly} defaultValue={species.common_name ?? ""} {...rest} />
+                        <Input readOnly={isReadOnly} defaultValue={species.scientific_name} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
-                  );
-                }}
-              />
-              <FormField
-                control={form.control}
-                name="kingdom"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kingdom</FormLabel>
-                    {/* Using shadcn/ui form with enum: https://github.com/shadcn-ui/ui/issues/772 */}
-                    <Select onValueChange={(value) => field.onChange(kingdoms.parse(value))} defaultValue={species.kingdom}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a kingdom" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectGroup>
-                          {kingdoms.options.map((kingdom, index) => (
-                            <SelectItem key={index} value={kingdom}>
-                              {kingdom}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="total_population"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Total population</FormLabel>
-                    <FormControl>
-                      {/* Using shadcn/ui form with number: https://github.com/shadcn-ui/ui/issues/421 */}
-                      <Input
-                        type="number"
-                        readOnly={isReadOnly}
-                        defaultValue={species.total_population?.toString() ?? "N/A"}
-                        {...field}
-                        onChange={(event) => field.onChange(+event.target.value)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="image"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Image URL</FormLabel>
-                    <FormControl>
-                      <Input
-                        defaultValue={species.image ?? "N/A"}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => {
-                  // We must extract value from field and convert a potential defaultValue of `null` to "" because textareas can't handle null values: https://github.com/orgs/react-hook-form/discussions/4091
-                  const { value, ...rest } = field;
-                  return (
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="common_name"
+                  render={({ field }) => {
+                    // We must extract value from field and convert a potential defaultValue of `null` to "" because inputs can't handle null values: https://github.com/orgs/react-hook-form/discussions/4091
+                    const { value, ...rest } = field;
+                    return (
+                      <FormItem>
+                        <FormLabel>Common Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            readOnly={isReadOnly}
+                            placeholder={value ?? ""}
+                            defaultValue={species.common_name ?? ""}
+                            {...rest}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+                <FormField
+                  control={form.control}
+                  name="kingdom"
+                  render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>Kingdom</FormLabel>
+                      {/* Using shadcn/ui form with enum: https://github.com/shadcn-ui/ui/issues/772 */}
+                      <Select
+                        onValueChange={(value) => field.onChange(kingdoms.parse(value))}
+                        defaultValue={species.kingdom}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a kingdom" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectGroup>
+                            {kingdoms.options.map((kingdom, index) => (
+                              <SelectItem key={index} value={kingdom}>
+                                {kingdom}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="total_population"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Total population</FormLabel>
                       <FormControl>
-                        <Textarea
-                          defaultValue={species.description ?? ""}
-                          {...rest}
+                        {/* Using shadcn/ui form with number: https://github.com/shadcn-ui/ui/issues/421 */}
+                        <Input
+                          type="number"
+                          readOnly={isReadOnly}
+                          defaultValue={species.total_population?.toString() ?? "N/A"}
+                          {...field}
+                          onChange={(event) => field.onChange(+event.target.value)}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
-                  );
-                }}
-              />
-              <div className="flex">
-                <Button type="submit" className="ml-1 mr-1 flex-auto" disabled={isReadOnly}>
-                  Edit Species
-                </Button>
-                <Button
-                  type="button"
-                  className="ml-1 mr-1 flex-auto"
-                  variant="secondary"
-                  onClick={() => {setOpen(false); setIsReadOnly(true)}}
-                >
-                  Cancel
-                </Button>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="image"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Image URL</FormLabel>
+                      <FormControl>
+                        <Input defaultValue={species.image ?? "N/A"} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => {
+                    // We must extract value from field and convert a potential defaultValue of `null` to "" because textareas can't handle null values: https://github.com/orgs/react-hook-form/discussions/4091
+                    const { value, ...rest } = field;
+                    return (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder={value ?? ""} defaultValue={species.description ?? ""} {...rest} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+                <div className="flex">
+                  <Button type="submit" className="ml-1 mr-1 flex-auto" disabled={isReadOnly}>
+                    Edit Species
+                  </Button>
+                  <Button
+                    type="button"
+                    className="ml-1 mr-1 flex-auto"
+                    variant="secondary"
+                    onClick={() => {
+                      setOpen(false);
+                      setIsReadOnly(true);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
-            </div>
-          </form>
-        </Form>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
     </div>

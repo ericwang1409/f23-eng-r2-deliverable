@@ -2,8 +2,7 @@
 
 // import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu"
 import { Icons } from "@/components/icons";
-
-import { Button } from "@/components/ui/button";
+// import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,21 +11,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface DropdownListProps {
-    onEdit: () => void;
-  }
+  onEdit: () => void;
+  onDelete: () => void;
+  userId: string;
+  speciesId: string;
+}
 
-export default function DropdownList({ onEdit } : DropdownListProps) {
+export default function DropdownList({ speciesId, userId, onEdit, onDelete }: DropdownListProps) {
+  // const [isAlertDialogOpen, setAlertDialogOpen] = useState(false);
+
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <Button variant="ghost">
-            <Icons.settings />
-          </Button>
+          <Icons.settings />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem onClick={onEdit}>Edit</DropdownMenuItem>
-          <DropdownMenuItem className="deleteButton">Delete</DropdownMenuItem>
+          <DropdownMenuItem disabled={speciesId !== userId} onClick={onEdit}>
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled={speciesId !== userId} onClick={() => onDelete()} className="deleteButton">
+            Delete
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </>
